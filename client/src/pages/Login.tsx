@@ -14,13 +14,18 @@ export default function Login() {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // 대표님 지시대로 admin / admin 체크!
-    if (username === "admin" && password === "admin") {
+    // 로컬 스토리지에서 계정 정보 불러오기 (없으면 admin/admin 기본값)
+    const savedCreds = localStorage.getItem("adminCredentials");
+    const { id: savedId, password: savedPassword } = savedCreds 
+      ? JSON.parse(savedCreds) 
+      : { id: "admin", password: "admin" };
+
+    if (username === savedId && password === savedPassword) {
       localStorage.setItem("isAdminAuthenticated", "true");
       toast.success("다람쥐 부장이 확인했습니다! 어드민 센터로 모시겠습니다.");
       setLocation("/admin");
     } else {
-      toast.error("비밀번호가 틀렸습니다, 대표님! 다시 한 번 확인 부탁 드립니다.");
+      toast.error("계정 정보가 일치하지 않습니다, 대표님! 다시 한 번 확인 부탁 드립니다.");
     }
   };
 

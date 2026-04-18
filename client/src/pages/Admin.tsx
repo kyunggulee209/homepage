@@ -983,10 +983,51 @@ function InquiriesView() {
 
 function SettingsView() {
   const [content, setContent] = useState(safeLoad);
+  const [, setLocation] = useLocation();
 
-  const handleSave = () => {
+  // 관리자 계정 변경 상태
+  const [showCredForm, setShowCredForm] = useState(false);
+  const [currentId, setCurrentId] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newId, setNewId] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+
+  useEffect(() => {
+    const savedCreds = localStorage.getItem("adminCredentials");
+    if (savedCreds) {
+      const parsed = JSON.parse(savedCreds);
+      setCurrentId(parsed.id);
+      setNewId(parsed.id);
+    } else {
+      setCurrentId("admin");
+      setNewId("admin");
+    }
+  }, []);
+
+  const handleSaveContent = () => {
     localStorage.setItem("cmsContent", JSON.stringify(content));
     toast.success("관리자 설정이 저장되었습니다, 대표님! 🫡");
+  };
+
+  const handleSaveCredentials = () => {
+    const savedCreds = localStorage.getItem("adminCredentials");
+    const savedPassword = savedCreds ? JSON.parse(savedCreds).password : "admin";
+
+    if (currentPassword !== savedPassword) {
+      toast.error("현재 비밀번호가 일치하지 않습니다.");
+      return;
+    }
+    if (!newId || !newPassword) {
+      toast.error("새로운 ID와 비밀번호를 모두 입력해주세요.");
+      return;
+    }
+
+    localStorage.setItem("adminCredentials", JSON.stringify({ id: newId, password: newPassword }));
+    toast.success("계정 정보가 성공적으로 변경되었습니다. 보안을 위해 다시 로그인해주세요.");
+    
+    // 로그아웃 처리
+    localStorage.removeItem("isAdminAuthenticated");
+    setLocation("/login");
   };
 
   return (
@@ -1021,22 +1062,71 @@ function SettingsView() {
           </div>
        </CMSSection>
 
-       <div className="p-8 bg-white border border-slate-100 rounded-sm shadow-sm space-y-6">
-          <div className="flex items-center justify-between">
-             <div>
-                <p className="font-bold text-sm tracking-tight mb-0.5">대시보드 암호 보안</p>
-                <p className="text-xs text-muted-foreground">현재 관리자 계정(admin)의 보안 수준이 적절하게 유지되고 있습니다.</p>
+       <CMSSection title="대시보드 보안 설정">
+          <div className="space-y-6">
+             <div className="flex items-center justify-between border-b pb-4">
+                <div>
+                   <p className="font-bold text-sm tracking-tight mb-0.5">관리자 계정 변경</p>
+                   <p className="text-xs text-muted-foreground">현재 계정 ID: <span className="font-bold text-primary">{currentId}</span></p>
+                </div>
+                <Button 
+                   variant={showCredForm ? "outline" : "default"} 
+                   className="text-xs font-bold rounded-sm h-9" 
+                   onClick={() => setShowCredForm(!showCredForm)}
+                >
+                   {showCredForm ? "취소하기" : "비밀번호 변경하기"}
+                </Button>
              </div>
-             <Button variant="outline" className="text-xs font-bold rounded-sm h-9" disabled>변경 준비 중</Button>
+
+             {showCredForm && (
+                <div className="pt-2 space-y-6 animate-in fade-in slide-in-from-top-4 duration-300">
+                   <div className="p-4 bg-slate-50 border rounded-sm space-y-4">
+                      <div className="space-y-2">
+                         <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">현재 비밀번호 확인</Label>
+                         <Input 
+                            type="password" 
+                            value={currentPassword} 
+                            onChange={(e) => setCurrentPassword(e.target.value)} 
+                            placeholder="보안을 위해 현재 비밀번호를 입력해주세요"
+                            className="bg-white"
+                         />
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t">
+                         <div className="space-y-2">
+                            <Label className="text-[10px] font-bold uppercase tracking-widest text-primary">새로운 관리자 ID</Label>
+                            <Input 
+                               value={newId} 
+                               onChange={(e) => setNewId(e.target.value)} 
+                               placeholder="새로운 ID"
+                               className="bg-white border-primary/20 focus-visible:ring-primary/20"
+                            />
+                         </div>
+                         <div className="space-y-2">
+                            <Label className="text-[10px] font-bold uppercase tracking-widest text-primary">새로운 비밀번호</Label>
+                            <Input 
+                               type="password" 
+                               value={newPassword} 
+                               onChange={(e) => setNewPassword(e.target.value)} 
+                               placeholder="새로운 비밀번호"
+                               className="bg-white border-primary/20 focus-visible:ring-primary/20"
+                            />
+                         </div>
+                      </div>
+                      <div className="flex justify-end pt-2">
+                         <Button onClick={handleSaveCredentials} className="font-bold">계정 정보 업데이트</Button>
+                      </div>
+                   </div>
+                </div>
+             )}
           </div>
-       </div>
+       </CMSSection>
 
        <div className="flex justify-end pt-6 border-t pb-20">
           <Button 
             className="rounded-sm px-12 h-12 font-bold shadow-xl shadow-primary/20 bg-primary"
-            onClick={handleSave}
+            onClick={handleSaveContent}
           >
-             설정 저장하기
+             기본 설정 저장하기
           </Button>
        </div>
     </div>
