@@ -28,7 +28,7 @@ export default function Login() {
       console.error("Failed to parse admin credentials:", err);
     }
 
-    if (username === savedId && password === savedPassword) {
+    if (username.trim() === savedId.trim() && password === savedPassword) {
       localStorage.setItem("isAdminAuthenticated", "true");
       toast.success("다람쥐 부장이 확인했습니다! 어드민 센터로 모시겠습니다.");
       setLocation("/admin");

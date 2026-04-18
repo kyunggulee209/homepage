@@ -1017,12 +1017,12 @@ function SettingsView() {
       toast.error("현재 비밀번호가 일치하지 않습니다.");
       return;
     }
-    if (!newId || !newPassword) {
+    if (!newId.trim() || !newPassword.trim()) {
       toast.error("새로운 ID와 비밀번호를 모두 입력해주세요.");
       return;
     }
 
-    localStorage.setItem("adminCredentials", JSON.stringify({ id: newId, password: newPassword }));
+    localStorage.setItem("adminCredentials", JSON.stringify({ id: newId.trim(), password: newPassword.trim() }));
     toast.success("계정 정보가 성공적으로 변경되었습니다. 보안을 위해 다시 로그인해주세요.");
     
     // 로그아웃 처리
