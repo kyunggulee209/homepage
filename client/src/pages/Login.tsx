@@ -14,11 +14,19 @@ export default function Login() {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // 로컬 스토리지에서 계정 정보 불러오기 (없으면 admin/admin 기본값)
-    const savedCreds = localStorage.getItem("adminCredentials");
-    const { id: savedId, password: savedPassword } = savedCreds 
-      ? JSON.parse(savedCreds) 
-      : { id: "admin", password: "admin" };
+    let savedId = "admin";
+    let savedPassword = "admin";
+    
+    try {
+      const savedCreds = localStorage.getItem("adminCredentials");
+      if (savedCreds) {
+        const parsed = JSON.parse(savedCreds);
+        if (parsed.id) savedId = parsed.id;
+        if (parsed.password) savedPassword = parsed.password;
+      }
+    } catch (err) {
+      console.error("Failed to parse admin credentials:", err);
+    }
 
     if (username === savedId && password === savedPassword) {
       localStorage.setItem("isAdminAuthenticated", "true");
